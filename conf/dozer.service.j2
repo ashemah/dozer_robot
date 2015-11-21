@@ -3,5 +3,5 @@ start on runlevel [2345]
 stop on runlevel [016]
 respawn
 script
-  exec /home/pi/dozer/venv/bin/python /home/pi/dozer/dozer.py
+  exec {{ virtualenv_root }}/bin/python {{ src_root }}/robot/dozer.py
 end script
