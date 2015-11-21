@@ -1,4 +1,4 @@
-project_name: dozer1
+project_name: dozer
 project_repo: git@github.com:ashemah/dozer_robot.git
 username: pi
 
@@ -11,4 +11,4 @@ log_root: "{{ project_root }}/logs"
 django_root: "{{ src_root }}/project"
 project_conf_root: "{{ src_root }}/conf"
 
-dozer_service: "dozer.conf"
+dozer_service_name: "dozer"

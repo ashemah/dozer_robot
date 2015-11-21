@@ -6,38 +6,17 @@
     - app_vars.yml
 
   tasks:
-    - local_action: osx_say msg="Deploying..."
-
-    - apt: update_cache=yes
-      sudo: yes
-
-    - apt: name=git state=present
-      sudo: yes
-
-    - apt: name=postgresql state=present
-      sudo: yes
-
-    - apt: name=nginx state=present
-      sudo: yes
-
-    - apt: name=uwsgi state=present
-      sudo: yes
-
-    - apt: name=python-virtualenv state=present
-      sudo: yes
-
-    - apt: name=python-dev state=present
-      sudo: yes
+    - local_action: osx_say msg="Updating..."
 
     - name: Updating repository
-      git:  repo="{{ project_repo }}" dest="{{ src_root }}" update=yes
+      git:  repo="{{ project_repo }}" dest="{{ project_root }}" update=yes
 
     - name: Create virtualenv
-      pip: requirements="{{ project_root }}/requirements.txt" virtualenv="{{virtualenv_root}}"
+      pip: requirements="{{ src_root }}/robot/requirements.txt" virtualenv="{{virtualenv_root}}"
 
     - name: Restarting dozer 
-      service: name={{ dozer_service }} state=restarted
+      service: name={{ dozer_service_name }} state=restarted
       sudo: yes
 
-    - local_action: osx_say msg="Deploy successful."
+    - local_action: osx_say msg="Update successful."
 

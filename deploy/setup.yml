@@ -30,12 +30,8 @@
       file: path="{{project_root}}" owner=pi group=pi state=directory
       sudo: yes
 
-    - name: Create src root
-      file: path="{{src_root}}" owner=pi group=pi state=directory
-      sudo: yes
-
     - name: Updating repository
-      git:  repo="{{ project_repo }}" dest="{{ src_root }}" update=yes accept_hostkey=yes
+      git:  repo="{{ project_repo }}" dest="{{ project_root }}" update=yes accept_hostkey=yes
       ignore_errors: True
 
     - name: Owning files
@@ -43,7 +39,7 @@
       sudo: yes
 
     - name: Create virtualenv
-      pip: requirements="{{ src_root }}/requirements.txt" virtualenv="{{virtualenv_root}}"
+      pip: requirements="{{ src_root }}/robot/requirements.txt" virtualenv="{{virtualenv_root}}"
 
     - name: Installing dozer core service
       template: src=../conf/dozer.service.j2 dest=/etc/init/{{ dozer_service_name }}.conf mode=644
