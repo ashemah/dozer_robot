@@ -1,56 +1,78 @@
+import argparse
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
 import serial
 import subprocess
 import psutil
 
-proc = None
-ser = serial.Serial('/dev/ttyACM0', 9600)
+# parser = argparse.ArgumentParser(description='Process some integers.')
+#
+# parser.add_argument('integers', metavar='N', type=int, nargs='+', help='an integer for the accumulator')
+# parser.add_argument('--sum', dest='accumulate', action='store_const', const=sum, default=max,
+#                     help='sum the integers (default: find the max)')
+#
+# args = parser.parse_args()
 
-def move_fwd():
-	ser.write('FWD0')
 
-def move_back():
-	ser.write('BACK0')
+class DozerCore:
 
-def rotate_left():
-	ser.write('LEFT0')
+    def __init__(self, server_ip, server_port, serial_port, serial_port_speed):
 
-def rotate_right():
-	ser.write('RIGHT0')
+        self.serial_port = serial.Serial(serial_port, serial_port_speed)
 
-def stop():
-	ser.write('STOP0')
+        self.server = SimpleJSONRPCServer((server_ip, server_port))
+        self.server.register_function(self.move_fwd)
+        self.server.register_function(self.move_back)
+        self.server.register_function(self.rotate_left)
+        self.server.register_function(self.rotate_right)
+        self.server.register_function(self.stop)
+        self.server.register_function(self.enable_camera)
+        self.server.register_function(self.disable_camera)
 
-def enable_camera():
-	global proc
-	if proc is not None:
-		proc.terminate()
+        self.proc = None
 
-	proc = subprocess.Popen(["/home/pi/dozer/video.sh"], stdout=subprocess.PIPE, shell=True)	
+    def move_fwd(self):
+        self.serial_port.write('FWD0')
 
-def disable_camera():
+    def move_back(self):
+        self.serial_port.write('BACK0')
 
-	for proc in psutil.process_iter():
-    		try:
-        		pinfo = proc.as_dict(attrs=['pid', 'cmdline'])
-    		except psutil.NoSuchProcess:
-        		pass
-    		else:
-        		print(pinfo)
-			cmdstr = "".join(pinfo['cmdline'])
-      			if 'video.sh' in cmdstr:
-				print "KILLIN {}".format(pinfo['pid'])
-				parent = psutil.Process(pinfo['pid'])
-				for child in parent.children(recursive=True):  # or parent.children() for recursive=False
-    					child.kill()
-				parent.kill()
+    def rotate_left(self):
+        self.serial_port.write('LEFT0')
 
-server = SimpleJSONRPCServer(('0.0.0.0', 8080))
-server.register_function(move_fwd)
-server.register_function(move_back)
-server.register_function(rotate_left)
-server.register_function(rotate_right)
-server.register_function(stop)
-server.register_function(enable_camera)
-server.register_function(disable_camera)
-server.serve_forever()
+    def rotate_right(self):
+        self.serial_port.write('RIGHT0')
+
+    def stop(self):
+        self.serial_port.write('STOP0')
+
+    def enable_camera(self):
+        if self.proc is not None:
+            self.proc.terminate()
+
+        self.proc = subprocess.Popen(["/home/pi/dozer/video.sh"], stdout=subprocess.PIPE, shell=True)
+
+    def disable_camera(self):
+
+        for proc in psutil.process_iter():
+            try:
+                pinfo = proc.as_dict(attrs=['pid', 'cmdline'])
+            except psutil.NoSuchProcess:
+                pass
+            else:
+                print(pinfo)
+                cmdstr = "".join(pinfo['cmdline'])
+                if 'video.sh' in cmdstr:
+                    print "KILLIN {}".format(pinfo['pid'])
+                    parent = psutil.Process(pinfo['pid'])
+                    for child in parent.children(recursive=True):  # or parent.children() for recursive=False
+                        child.kill()
+                    parent.kill()
+
+    def run(self):
+        self.server.serve_forever()
+
+
+if __name__ == '__main__':
+
+    dozer_core = DozerCore('0.0.0.0', 8080, '/dev/ttyACM0', 9600)
+    dozer_core.run()
