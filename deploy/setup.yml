@@ -1,0 +1,62 @@
+- hosts: robots
+
+  remote_user: pi
+  gather_facts: no
+
+  vars_files:
+    - app_vars.yml
+
+  tasks:
+
+    - apt: update_cache=yes
+      sudo: yes
+
+    - apt: name=git state=present
+      sudo: yes
+
+    - apt: name=nginx state=present
+      sudo: yes
+
+    - apt: name=uwsgi state=present
+      sudo: yes
+
+    - apt: name=python-virtualenv state=present
+      sudo: yes
+
+    - apt: name=python-dev state=present
+      sudo: yes
+
+    - name: Create project root
+      file: path="{{project_root}}" owner=pi group=pi state=directory
+      sudo: yes
+
+    - name: Create src root
+      file: path="{{src_root}}" owner=pi group=pi state=directory
+      sudo: yes
+
+    - name: Updating repository
+      git:  repo="{{ project_repo }}" dest="{{ src_root }}" update=yes accept_hostkey=yes
+      ignore_errors: True
+
+    - name: Owning files
+      file: path="{{ project_root }}" owner=pi group=pi recurse=yes
+      sudo: yes
+
+    - name: Create virtualenv
+      pip: requirements="{{ src_root }}/requirements.txt" virtualenv="{{virtualenv_root}}"
+
+    - name: Installing dozer core service
+      template: src=../conf/dozer.service.j2 dest=/etc/init/{{ dozer_service_name }}.conf mode=644
+      sudo: yes
+
+    - name: Update uwsgi
+      service: name=uwsgi state=restarted
+      sudo: yes
+
+    - name: Update nginx
+      service: name=nginx state=restarted
+      sudo: yes
+
+    - name: Start core
+      service: name={{ dozer_service_name }} state=restarted
+      sudo: yes
