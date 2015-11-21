@@ -130,6 +130,7 @@ input_http.so: mjpg_streamer.h utils.h
 	cp plugins/input_http/input_http.so .
 
 input_raspicam.so: mjpg_streamer.h utils.h
+	mkdir plugins/input_raspicam/build 
 	cd plugins/input_raspicam/build; cmake ..
 	make -C plugins/input_raspicam/build
 	cp plugins/input_raspicam/build/libinput_raspicam.so ./input_raspicam.so
