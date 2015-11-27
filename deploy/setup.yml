@@ -45,6 +45,10 @@
       template: src=../conf/dozer.service.j2 dest=/etc/init/{{ dozer_service_name }}.conf mode=644
       sudo: yes
 
+    - name: Build MJPG Experimental
+      sudo: yes
+      shell: 'cd {{ src_root }}/contrib/mjpg-streamer/mjpg-streamer-experimental;sudo make all'
+
     - name: Update uwsgi
       service: name=uwsgi state=restarted
       sudo: yes
