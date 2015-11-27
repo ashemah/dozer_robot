@@ -3,5 +3,5 @@ start on runlevel [2345]
 stop on runlevel [016]
 respawn
 script
-  exec {{ virtualenv_root }}/bin/python {{ src_root }}/robot/dozer_core.py -c {{ project_root }}/data/dozer.json -p {{src_root}}/robot
+  exec {{ virtualenv_root }}/bin/python {{ src_root }}/robot/robot_core.py -c {{ project_root }}/data/dozer.json -p {{src_root}}/robot
 end script
