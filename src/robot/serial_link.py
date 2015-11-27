@@ -19,4 +19,9 @@ class SerialLink(object):
         print "Serial: " + data
 
         if not self.stub:
-            self.serial_port.write(data)
+
+            try:
+                self.serial_port.write(data)
+            except Exception:
+                self.serial_port.close()
+                self.serial_port.open()
