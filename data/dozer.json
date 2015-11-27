@@ -1,18 +1,28 @@
 {
-    "name"
-<?xml version="1.0" encoding="utf-8"?>
-<robot name="dozer" id="com.boostedhuman.robot.dozer">
-    <nodes>
-        <node name="rpc_proxy" class="rpc_proxy"/>
+    "name": "dozer",
+    "id": "com.boostedhuman.robots.dozer",
+    "components": {
 
-        <node name="vision_processor" remote="true"/>
+      "dozer_node": {
+        "classname": "dozer_node.DozerNode",
+        "deps": ["rpc_proxy", "hardware_service"]
+      },
 
-        <node name="dozer_core" class="dozer_node">
-            <linked>rpc_proxy</linked>
-            <linked>motor_controller</linked>
-        </node>
-    </nodes>
-    <services>
-        <service name="sensor_motor_hub"/>
-    </services>
-</robot>
+      "rpc_proxy": {
+        "classname": "rpc_proxy_node.RPCProxyNode",
+        "params": {
+          "port": 8080
+        }
+      },
+
+      "hardware_service": {
+        "classname": "hardware_service.HardwareService",
+        "params": {
+          "stub": false,
+          "serial_port": "/dev/tty.usbmodem1421",
+          "serial_port_speed": 9600,
+          "service_port": 9000
+        }
+      }
+    }
+}
