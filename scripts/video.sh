@@ -1,1 +1,1 @@
-LD_LIBRARY_PATH=/home/pi/work/mjpg-streamer-master/mjpg-streamer-experimental /home/pi/work/mjpg-streamer-master/mjpg-streamer-experimental/mjpg_streamer -o "output_http.so -w /usr/share/nginx/www --port 8081" -i "input_raspicam.so -x 320 -y 240 -rot 180 -fps 30 -quality 30"
+LD_LIBRARY_PATH=/home/pi/dozer/src/contrib/mjpg-streamer/mjpg-streamer-experimental /home/pi/dozer/src/contrib/mjpg-streamer/mjpg-streamer-experimental/mjpg_streamer -o "output_http.so -w /usr/share/nginx/www --port 8081" -i "input_raspicam.so -x 320 -y 240 -rot 180 -fps 30 -quality 30"
