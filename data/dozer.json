@@ -19,7 +19,7 @@
         "classname": "hardware_service.HardwareService",
         "params": {
           "stub": false,
-          "serial_port": "/dev/tty.usbmodem1421",
+          "serial_port": "/dev/ttyACM0",
           "serial_port_speed": 9600,
           "service_port": 9000
         }
