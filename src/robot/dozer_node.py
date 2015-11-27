@@ -47,7 +47,7 @@ class DozerNode(BaseNode):
         if self.proc is not None:
             self.proc.terminate()
 
-        self.proc = subprocess.Popen(["/home/pi/dozer/video.sh"], stdout=subprocess.PIPE, shell=True)
+        self.proc = subprocess.Popen(["/home/pi/dozer/scripts/video.sh"], stdout=subprocess.PIPE, shell=True)
 
     def disable_camera(self):
 
