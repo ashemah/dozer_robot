@@ -5,8 +5,8 @@ from base_service import BaseService
 
 class CameraService(BaseService):
 
-    def __init__(self, node_name, launch_params):
-        super(CameraService, self).__init__(node_name, launch_params)
+    def __init__(self, namespace, node_name, launch_params):
+        super(CameraService, self).__init__(namespace, node_name, launch_params)
         self.proc = None
 
     def on_service_message(self, sender, message):

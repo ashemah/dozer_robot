@@ -26,6 +26,9 @@
     - apt: name=python-dev state=present
       sudo: yes
 
+    - apt: name=redis-server state=present
+      sudo: yes
+
     - name: Create project root
       file: path="{{project_root}}" owner=pi group=pi state=directory
       sudo: yes

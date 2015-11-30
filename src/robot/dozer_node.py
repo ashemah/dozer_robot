@@ -3,16 +3,22 @@ from base_node import BaseNode
 
 class DozerNode(BaseNode):
 
-    def __init__(self, node_name, launch_params):
-        super(DozerNode, self).__init__(node_name, launch_params)
+    def __init__(self, namespace, node_name, launch_params):
+        super(DozerNode, self).__init__(namespace, node_name, launch_params)
 
         # subscribe
         self.message_bus.subscribe('/rpc/cmd', self.on_rpc_message)
 
         self.hardware = self.comms.get_service('hardware_service', self.on_hardware_message)
         self.camera = self.comms.get_service('camera_service', self.on_camera_message)
+        self.speech = self.comms.get_service('speech_service', self.on_speech_message)
 
-        print "Node started"
+    def say(self, text):
+        print "Say: {}".format(text)
+        self.speech.send({'cmd': 'say', 'text': text})
+
+    def on_speech_message(self, service_name, message):
+        pass
 
     def on_hardware_message(self, service_name, message):
         pass

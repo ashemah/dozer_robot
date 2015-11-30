@@ -4,8 +4,8 @@ from serial_link import SerialLink
 
 class HardwareService(BaseService):
 
-    def __init__(self, node_name, launch_params):
-        super(HardwareService, self).__init__(node_name, launch_params)
+    def __init__(self, namespace, node_name, launch_params):
+        super(HardwareService, self).__init__(namespace, node_name, launch_params)
 
         self.is_open = False
 

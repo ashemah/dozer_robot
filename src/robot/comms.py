@@ -5,8 +5,9 @@ from service_link import ServiceClient
 
 class Comms(object):
 
-    def __init__(self, is_client=True):
+    def __init__(self, namespace):
 
+        self.namespace = namespace
         self.context = zmq.Context()
 
         self.registered_modules = []
@@ -14,19 +15,14 @@ class Comms(object):
 
         self.master_socket_cb = None
 
-        if is_client:
-            self.connect_to_master_socket()
-        else:
-            self.bind_master_socket()
-
-    def set_master_socket_cb(self, cb):
+    def _set_master_socket_cb(self, cb):
         self.master_socket_cb = cb
 
-    def connect_to_master_socket(self):
+    def _connect_to_master_socket(self):
         self.master_socket = self.context.socket(zmq.REQ)
         self.master_socket.connect("ipc:///tmp/master")
 
-    def bind_master_socket(self):
+    def _bind_master_socket(self):
         self.master_socket = self.context.socket(zmq.REP)
         self.master_socket.bind("ipc:///tmp/master")
         self.poller.register(self.master_socket)
@@ -35,6 +31,16 @@ class Comms(object):
         self.master_socket.send_json({'cmd': 'resolve_service', 'service_name': service_name})
         res = self.master_socket.recv_json()
         return res['connection_string']
+
+    def set_param(self, name, value):
+        name = '/'.join([self.namespace, name])
+        self.master_socket.send_json({'cmd': 'set_param', 'name': name, 'value': value})
+        return self.master_socket.recv_json()
+
+    def get_param(self, name):
+        name = '/'.join([self.namespace, name])
+        self.master_socket.send_json({'cmd': 'get_param', 'name': name})
+        return self.master_socket.recv_json()
 
     def get_message_bus(self):
         message_bus_client = MessageBusClient(self.context)
@@ -53,7 +59,6 @@ class Comms(object):
         self.poller.register(socket)
 
     def process_master_socket_message(self, socket):
-
         message = socket.recv_json()
         res = self.master_socket_cb(message)
         socket.send_json(res)
