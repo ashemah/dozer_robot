@@ -101,5 +101,6 @@ class ServiceClient(CommsModuleBase):
         res = self.send_socket.recv_json()
 
     def send(self, command, cmd_key=''):
+        print "Sending: {}".format(command)
         self.send_socket.send_json({'type': 'cmd', 'sender': self.sender, 'cmd': command, 'cmd_key': cmd_key})
         res = self.send_socket.recv_json()

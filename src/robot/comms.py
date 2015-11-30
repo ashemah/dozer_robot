@@ -49,6 +49,7 @@ class Comms(object):
 
     def get_service(self, service_name, message_cb):
         connection_string = self.get_connection_string_for_service(service_name)
+        print "Bind Service: {} -> {}".format(service_name, connection_string)
         service_client = ServiceClient(self.context, connection_string, message_cb)
         self.add_module(service_client)
         return service_client
