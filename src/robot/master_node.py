@@ -2,6 +2,7 @@ import argparse
 import json
 from multiprocessing import Process
 from time import sleep
+import redis
 from comms import Comms
 from message_bus import MessageBusServer
 
@@ -14,15 +15,18 @@ class RobotCore(object):
         self.components = {}
         self.connection_strings = {}
         self.running_nodes = {}
-        self.comms = Comms(False)
-        self.comms.set_master_socket_cb(self.handle_master_socket_message)
+
+        self.comms = Comms('/master')
+        self.comms._bind_master_socket()
+        self.comms._set_master_socket_cb(self.handle_master_socket_message)
+
+        self.redis = redis.StrictRedis(host='localhost', port=6379, db=0)
 
     def handle_master_socket_message(self, message):
 
         if message['cmd'] == 'resolve_service':
 
             service_name = message['service_name']
-
             connection_string = self.connection_strings[service_name]
 
             res = {
@@ -31,6 +35,16 @@ class RobotCore(object):
             }
 
             return res
+
+        elif message['cmd'] == 'set_param':
+            param_name = message['name']
+            param_value = message['value']
+            self.redis.set(param_name, param_value)
+            return {'status': 'success'}
+
+        elif message['cmd'] == 'get_param':
+            param_name = message['name']
+            return self.redis.get(param_name)
 
     def load_definition(self, config_filename):
 
@@ -43,32 +57,34 @@ class RobotCore(object):
             deps_dict = {}
 
             # load from the nodes
-            nodes = self.config['nodes']
-            for node_name in nodes:
+            if 'nodes' in self.config:
+                nodes = self.config['nodes']
+                for node_name in nodes:
 
-                node = nodes[node_name]
-                self.components[node_name] = node
+                    node = nodes[node_name]
+                    self.components[node_name] = node
 
-                if 'launch' in node and node["launch"] == False:
-                    continue
+                    if 'launch' in node and node["launch"] == False:
+                        continue
 
-                if 'dependencies' in node:
-                    deps = node['dependencies']
-                    deps_dict[node_name] = deps
+                    if 'dependencies' in node:
+                        deps = node['dependencies']
+                        deps_dict[node_name] = deps
 
-            # load from the services
-            services = self.config['services']
-            for node_name in services:
+            if 'services' in self.config:
+                # load from the services
+                services = self.config['services']
+                for node_name in services:
 
-                node = services[node_name]
-                self.components[node_name] = node
+                    node = services[node_name]
+                    self.components[node_name] = node
 
-                if 'launch' in node and node["launch"] == False:
-                    continue
+                    if 'launch' in node and node["launch"] == False:
+                        continue
 
-                if 'deps' in node:
-                    deps = node['deps']
-                    deps_dict[node_name] = deps
+                    if 'deps' in node:
+                        deps = node['deps']
+                        deps_dict[node_name] = deps
 
             # Build the load order
             self.launch_order = self.resolve_dependencies(deps_dict)
@@ -125,8 +141,10 @@ class RobotCore(object):
                 launch_params['connection_string'] = connection_string
                 self.connection_strings[node_name] = connection_string
 
+                namespace = '/components/{}'.format(node_name)
+
                 # Now launch the nodes in a new thread
-                new_proc = Process(target=self.launch_node_async, args=(node_name, class_name, launch_params))
+                new_proc = Process(target=self.launch_node_async, args=(namespace, node_name, class_name, launch_params))
                 new_proc.start()
 
                 sleep(0.5)
@@ -134,13 +152,13 @@ class RobotCore(object):
     def on_master_service_message(self):
         pass
 
-    def launch_node_async(self, node_name, class_name, launch_params):
+    def launch_node_async(self, namespace, node_name, class_name, launch_params):
 
         print "Node: " + node_name
 
         cls = self.load_class_by_name(class_name)
 
-        obj = cls(node_name, launch_params)
+        obj = cls(namespace, node_name, launch_params)
 
         self.running_nodes[node_name] = {
             'name': node_name,
