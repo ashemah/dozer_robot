@@ -36,7 +36,7 @@
 
       "speech_service": {
         "is_external": true,
-        "host": "192.168.1.5",
+        "hostname": "192.168.1.5",
         "port": 9000
       }
 

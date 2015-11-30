@@ -113,22 +113,22 @@ class RobotCore(object):
                 launch_service_locally = True
 
                 # Connect to external service
-                if 'is_external' in launch_params:
+                if 'is_external' in node_info:
                     launch_service_locally = False
-                    host = launch_params['hostname']
-                    port = launch_params['port']
+                    host = node_info['hostname']
+                    port = node_info['port']
                     connection_string = "tcp://{}:{}".format(host, port)
 
                 # Export internal service
                 elif 'is_exported' in launch_params:
 
                     if 'hostname' in launch_params:
-                        host = launch_params['hostname']
+                        host = node_info['hostname']
                     else:
                         host = "*"
 
                     if 'port' in launch_params:
-                        port = launch_params['port']
+                        port = node_info['port']
                     else:
                         port = 9111 # Make this a random port within the range allowed
 
