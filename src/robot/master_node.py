@@ -113,8 +113,11 @@ class RobotCore(object):
                 else:
                     launch_params = {}
 
+                launch_service_locally = True
+
                 # Connect to external service
                 if 'is_external' in launch_params:
+                    launch_service_locally = False
                     host = launch_params['hostname']
                     port = launch_params['port']
                     connection_string = "tcp://{}:{}".format(host, port)
@@ -144,8 +147,10 @@ class RobotCore(object):
                 namespace = '/components/{}'.format(node_name)
 
                 # Now launch the nodes in a new thread
-                new_proc = Process(target=self.launch_node_async, args=(namespace, node_name, class_name, launch_params))
-                new_proc.start()
+
+                if launch_service_locally:
+                    new_proc = Process(target=self.launch_node_async, args=(namespace, node_name, class_name, launch_params))
+                    new_proc.start()
 
                 sleep(0.5)
 
