@@ -1,0 +1,13 @@
+{
+    "name": "heimat",
+    "id": "com.boostedhuman.robots.heimat",
+    "services": {
+      "speech_service": {
+        "class_name": "speech_service.SpeechService",
+        "launch_params": {
+          "is_published": true,
+          "port": "9000"
+        }
+      }
+    }
+}
