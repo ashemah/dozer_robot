@@ -13,6 +13,8 @@ class DozerNode(BaseNode):
         self.camera = self.comms.get_service('camera_service', self.on_camera_message)
         self.speech = self.comms.get_service('speech_service', self.on_speech_message)
 
+        self.say("Dozer is online")
+
     def say(self, text):
         print "Say: {}".format(text)
         self.speech.send({'cmd': 'say', 'text': text})
