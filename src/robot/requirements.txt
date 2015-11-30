@@ -4,7 +4,6 @@ lxml==3.5.0
 mercurial==3.3.2
 pluginbase==0.3
 psutil==3.2.2
-pyOSC==0.3.5b5294
 pyserial==2.7
 pywatchman==0.1
 pyzmq==15.0.0
