@@ -104,9 +104,6 @@ class RobotCore(object):
 
                 node_info = self.components[node_name]
 
-                # Class name
-                class_name = node_info['class_name']
-
                 # Instantiate the class
                 if 'launch_params' in node_info:
                     launch_params = node_info['launch_params']
@@ -149,6 +146,10 @@ class RobotCore(object):
                 # Now launch the nodes in a new thread
 
                 if launch_service_locally:
+
+                    # Class name
+                    class_name = node_info['class_name']
+
                     new_proc = Process(target=self.launch_node_async, args=(namespace, node_name, class_name, launch_params))
                     new_proc.start()
 
