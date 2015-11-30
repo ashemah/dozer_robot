@@ -1,14 +1,20 @@
-import serial
 from base_service import BaseService
 from serial_link import SerialLink
 
 
 class HardwareService(BaseService):
 
-    def __init__(self, params):
-        super(HardwareService, self).__init__(params)
-        self.serial_link = SerialLink(self.get_param('serial_port'), self.get_param('serial_port_speed', 9600), self.get_param('stub'))
-        self.serial_link.open()
+    def __init__(self, node_name, launch_params):
+        super(HardwareService, self).__init__(node_name, launch_params)
+
+        self.is_open = False
+
+        try:
+            self.serial_link = SerialLink(self.get_param('serial_port'), self.get_param('serial_port_speed', 9600), self.get_param('stub'))
+            self.serial_link.open()
+            self.is_open = True
+        except Exception, e:
+            self.is_open = False
 
     def on_service_message(self, sender, message):
 

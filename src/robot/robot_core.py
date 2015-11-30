@@ -11,22 +11,57 @@ class RobotCore(object):
     def __init__(self):
         self.launch_order = []
         self.config = None
-        self.nodes = {}
+        self.components = {}
+        self.connection_strings = {}
         self.running_nodes = {}
+        self.comms = Comms(False)
+        self.comms.set_master_socket_cb(self.handle_master_socket_message)
 
-    def load_def(self, config_filename):
+    def handle_master_socket_message(self, message):
+
+        if message['cmd'] == 'resolve_service':
+
+            service_name = message['service_name']
+
+            connection_string = self.connection_strings[service_name]
+
+            res = {
+                'service_name': service_name,
+                'connection_string': connection_string
+            }
+
+            return res
+
+    def load_definition(self, config_filename):
 
         print "Config: " + config_filename
 
         with open(config_filename) as data_file:
             self.config = json.load(data_file)
 
-            self.nodes = self.config['components']
-
+            self.components = {}
             deps_dict = {}
-            for node_name in self.nodes:
 
-                node = self.nodes[node_name]
+            # load from the nodes
+            nodes = self.config['nodes']
+            for node_name in nodes:
+
+                node = nodes[node_name]
+                self.components[node_name] = node
+
+                if 'launch' in node and node["launch"] == False:
+                    continue
+
+                if 'dependencies' in node:
+                    deps = node['dependencies']
+                    deps_dict[node_name] = deps
+
+            # load from the services
+            services = self.config['services']
+            for node_name in services:
+
+                node = services[node_name]
+                self.components[node_name] = node
 
                 if 'launch' in node and node["launch"] == False:
                     continue
@@ -35,50 +70,81 @@ class RobotCore(object):
                     deps = node['deps']
                     deps_dict[node_name] = deps
 
+            # Build the load order
             self.launch_order = self.resolve_dependencies(deps_dict)
 
     def launch(self, plugin_dir):
 
         # Launch message server
-        print "Launching: Message Server..."
-        message_server = Process(target=self.launch_message_server)
-        message_server.start()
+        print "Node: Message Server..."
+        message_bus_server = MessageBusServer(self.comms.context)
+        self.comms.add_module(message_bus_server)
 
-        sleep(1)
+        sleep(0.5)
 
         for launch_set in self.launch_order:
 
             for node_name in launch_set:
 
-                node_info = self.nodes[node_name]
+                node_info = self.components[node_name]
+
+                # Class name
+                class_name = node_info['class_name']
+
+                # Instantiate the class
+                if 'launch_params' in node_info:
+                    launch_params = node_info['launch_params']
+                else:
+                    launch_params = {}
+
+                # Connect to external service
+                if 'is_external' in launch_params:
+                    host = launch_params['hostname']
+                    port = launch_params['port']
+                    connection_string = "tcp://{}:{}".format(host, port)
+
+                # Export internal service
+                elif 'is_exported' in launch_params:
+
+                    if 'hostname' in launch_params:
+                        host = launch_params['hostname']
+                    else:
+                        host = "*"
+
+                    if 'port' in launch_params:
+                        port = launch_params['port']
+                    else:
+                        port = 9111 # Make this a random port within the range allowed
+
+                    connection_string = "tcp://{}:{}".format(host, port)
+
+                # Standard internal service
+                else:
+                    connection_string = "ipc:///tmp/{}".format(node_name)
+
+                launch_params['connection_string'] = connection_string
+                self.connection_strings[node_name] = connection_string
 
                 # Now launch the nodes in a new thread
-                new_proc = Process(target=self.launch_node, args=(node_name, node_info))
+                new_proc = Process(target=self.launch_node_async, args=(node_name, class_name, launch_params))
                 new_proc.start()
 
                 sleep(0.5)
 
-        print self.running_nodes
+    def on_master_service_message(self):
+        pass
 
-    def launch_node(self, node_name, node_info):
-        class_name = node_info['classname']
+    def launch_node_async(self, node_name, class_name, launch_params):
 
-        print "Launching: " + class_name
+        print "Node: " + node_name
 
         cls = self.load_class_by_name(class_name)
 
-        # Instantiate the class
-
-        if 'params' in node_info:
-            params = node_info['params']
-        else:
-            params = {}
-
-        obj = cls(params)
+        obj = cls(node_name, launch_params)
 
         self.running_nodes[node_name] = {
             'name': node_name,
-            'params': params,
+            'launch_params': launch_params,
             'node': obj
         }
 
@@ -95,16 +161,6 @@ class RobotCore(object):
         cls = getattr(module, module_name)
 
         return cls
-
-    def launch_message_server(self):
-
-        print "Starting message bus server"
-        comms = Comms()
-        message_bus = MessageBusServer()
-        comms.add_module(message_bus)
-        print "Message bus server started"
-
-        comms.process_messages()
 
     @classmethod
     def resolve_dependencies(cls, deps_dict):
@@ -131,7 +187,7 @@ class RobotCore(object):
         return r
 
     def run(self):
-        pass
+        self.comms.process_messages()
 
 
 if __name__ == '__main__':
@@ -142,5 +198,6 @@ if __name__ == '__main__':
     results = parser.parse_args()
 
     loader = RobotCore()
-    loader.load_def(results.config_filename)
+    loader.load_definition(results.config_filename)
     loader.launch(results.plugin_dir)
+    loader.run()

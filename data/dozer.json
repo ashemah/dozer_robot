@@ -1,28 +1,45 @@
 {
     "name": "dozer",
     "id": "com.boostedhuman.robots.dozer",
-    "components": {
-
+    "nodes": {
       "dozer_node": {
-        "classname": "dozer_node.DozerNode",
-        "deps": ["rpc_proxy", "hardware_service"]
+        "class_name": "dozer_node.DozerNode",
+        "dependencies": [
+          "rpc_proxy",
+          "hardware_service",
+          "camera_service"
+        ]
       },
-
       "rpc_proxy": {
-        "classname": "rpc_proxy_node.RPCProxyNode",
-        "params": {
+        "class_name": "rpc_proxy_node.RPCProxyNode",
+        "launch_params": {
           "port": 8080
         }
-      },
+      }
+    },
 
+    "services": {
       "hardware_service": {
-        "classname": "hardware_service.HardwareService",
-        "params": {
+        "class_name": "hardware_service.HardwareService",
+        "launch_params": {
           "stub": false,
           "serial_port": "/dev/ttyACM0",
           "serial_port_speed": 9600,
           "service_port": 9000
         }
+      },
+
+      "camera_service": {
+        "class_name": "camera_service.CameraService"
+      },
+
+      "vision_service": {
+        "is_external": true,
+        "host": "foo.com",
+        "port": 9801,
+        "launch_params": {
+        }
       }
+
     }
 }

@@ -1,24 +1,23 @@
-import subprocess
-import psutil
 from base_node import BaseNode
-from service_link import ServiceClient
 
 
 class DozerNode(BaseNode):
 
-    def __init__(self, params):
-        super(DozerNode, self).__init__(params)
-
-        self.proc = None
+    def __init__(self, node_name, launch_params):
+        super(DozerNode, self).__init__(node_name, launch_params)
 
         # subscribe
         self.message_bus.subscribe('/rpc/cmd', self.on_rpc_message)
 
-        self.hardware = self.comms.get_service('localhost', 9000, self.on_hardware_message)
+        self.hardware = self.comms.get_service('hardware_service', self.on_hardware_message)
+        self.camera = self.comms.get_service('camera_service', self.on_camera_message)
 
         print "Node started"
 
     def on_hardware_message(self, service_name, message):
+        pass
+
+    def on_camera_message(self, service_name, message):
         pass
 
     def on_rpc_message(self, channel, message):
@@ -39,32 +38,9 @@ class DozerNode(BaseNode):
             value = message['value']
             self.hardware.send({'cmd': 'move_head', 'position': value})
         elif method == 'enable_camera':
-            self.enable_camera()
+            self.camera.send({'set_camera_enabled': True})
         elif method == 'disable_camera':
-            self.disable_camera()
-
-    def enable_camera(self):
-        if self.proc is not None:
-            self.proc.terminate()
-
-        self.proc = subprocess.Popen(["/home/pi/dozer/scripts/video.sh"], stdout=subprocess.PIPE, shell=True)
-
-    def disable_camera(self):
-
-        for proc in psutil.process_iter():
-            try:
-                pinfo = proc.as_dict(attrs=['pid', 'cmdline'])
-            except psutil.NoSuchProcess:
-                pass
-            else:
-                print(pinfo)
-                cmdstr = "".join(pinfo['cmdline'])
-                if 'video.sh' in cmdstr:
-                    parent = psutil.Process(pinfo['pid'])
-                    for child in parent.children(recursive=True):  # or parent.children() for recursive=False
-                        child.kill()
-                    parent.kill()
-
+            self.camera.send({'set_camera_enabled': False})
 
 if __name__ == '__main__':
 

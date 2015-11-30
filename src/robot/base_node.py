@@ -3,16 +3,19 @@ from comms import Comms
 
 class BaseNode(object):
 
-    def __init__(self, params):
-        self.params = params
+    def __init__(self, node_name, launch_params):
+        self.node_name = node_name
+        self.params = launch_params
 
         self.comms = Comms()
+        self.comms.connect_to_master_socket()
+
         self.message_bus = self.comms.get_message_bus()
 
-    def get_param(self, name, default=None):
+    def get_param(self, param_name, default=None):
 
-        if name in self.params:
-            return self.params[name]
+        if param_name in self.params:
+            return self.params[param_name]
         else:
             return default
 

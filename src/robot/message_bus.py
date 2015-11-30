@@ -5,8 +5,9 @@ from comms_module_base import CommsModuleBase
 
 class MessageBusServer(CommsModuleBase):
 
-    def __init__(self, bus_socket='9111', publish_socket='9112'):
-        self.context = zmq.Context()
+    def __init__(self, zmq_context, bus_socket='9111', publish_socket='9112'):
+
+        self.context = zmq_context
 
         self.bus_socket = self.context.socket(zmq.REP)
         self.pub_socket = self.context.socket(zmq.PUB)
@@ -51,11 +52,11 @@ class MessageBusServer(CommsModuleBase):
 
 class MessageBusClient(CommsModuleBase):
 
-    def __init__(self, bus_socket='tcp://localhost:9111', publish_socket='tcp://localhost:9112'):
+    def __init__(self, zmq_context, bus_socket='tcp://localhost:9111', publish_socket='tcp://localhost:9112'):
+
+        self.context = zmq_context
 
         self.uuid = str(uuid4())
-
-        self.context = zmq.Context()
 
         self.pub_socket = self.context.socket(zmq.REQ)
 

@@ -5,9 +5,9 @@ from comms_module_base import CommsModuleBase
 
 class ServiceServer(CommsModuleBase):
 
-    def __init__(self, service_port, command_cb):
+    def __init__(self, zmq_context, connection_string, command_cb):
 
-        self.context = zmq.Context()
+        self.context = zmq_context
 
         self.command_cb = command_cb
 
@@ -15,7 +15,7 @@ class ServiceServer(CommsModuleBase):
         self.active_commands = {}
 
         self.recv_socket = self.context.socket(zmq.REP)
-        self.recv_socket.bind("tcp://*:{}".format(service_port))
+        self.recv_socket.bind(connection_string)
 
     def get_socket(self):
         return self.recv_socket
@@ -75,12 +75,11 @@ class ServiceServer(CommsModuleBase):
 
 class ServiceClient(CommsModuleBase):
 
-    def __init__(self, host, port, cmd_cb):
+    def __init__(self, zmq_context, connection_string, cmd_cb):
 
-        self.host = host
-        self.port = port
+        self.connection_string = connection_string
 
-        self.context = zmq.Context()
+        self.context = zmq_context
         self.sender = str(uuid4())
 
         self.cmd_cb = cmd_cb
@@ -96,7 +95,7 @@ class ServiceClient(CommsModuleBase):
 
     def connect(self):
 
-        self.send_socket.connect("tcp://{}:{}".format(self.host, self.port))
+        self.send_socket.connect(self.connection_string)
 
         self.send_socket.send_json({'type': 'connect', 'sender': self.sender})
         res = self.send_socket.recv_json()

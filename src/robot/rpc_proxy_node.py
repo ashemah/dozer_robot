@@ -4,10 +4,9 @@ from base_node import BaseNode
 
 class RPCProxyNode(BaseNode):
 
-    def __init__(self, params):
-        super(RPCProxyNode, self).__init__(params)
+    def __init__(self, node_name, launch_params):
+        super(RPCProxyNode, self).__init__(node_name, launch_params)
 
-        print "Params: " + str(self.params)
         self.server = SimpleJSONRPCServer((self.get_param('hostname', "0.0.0.0"), self.get_param('port', 8080)))
         self.server.register_instance(self)
         self.server.register_function(self.move_fwd)
