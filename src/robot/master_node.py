@@ -56,6 +56,8 @@ class RobotCore(object):
             self.components = {}
             deps_dict = {}
 
+            last_name = None
+
             # load from the nodes
             if 'nodes' in self.config:
                 nodes = self.config['nodes']
@@ -70,6 +72,8 @@ class RobotCore(object):
                     if 'dependencies' in node:
                         deps = node['dependencies']
                         deps_dict[node_name] = deps
+
+                    last_name = node_name
 
             if 'services' in self.config:
                 # load from the services
@@ -86,8 +90,14 @@ class RobotCore(object):
                         deps = node['deps']
                         deps_dict[node_name] = deps
 
+                    last_name = node_name
+
             # Build the load order
             self.launch_order = self.resolve_dependencies(deps_dict)
+
+            if len(self.launch_order) == 0:
+                self.launch_order.append(set(last_name))
+
             print "Launch order: {}".format(self.launch_order)
 
     def launch(self, plugin_dir):
