@@ -5,6 +5,6 @@ mercurial==3.3.2
 pluginbase==0.3
 psutil==3.2.2
 pyserial==2.7
-pywatchman==0.1
+pywatchman
 pyzmq==15.0.0
 redis==2.10.5
