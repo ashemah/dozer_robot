@@ -88,6 +88,7 @@ class RobotCore(object):
 
             # Build the load order
             self.launch_order = self.resolve_dependencies(deps_dict)
+            print "Launch order: {}".format(self.launch_order)
 
     def launch(self, plugin_dir):
 
