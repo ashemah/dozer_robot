@@ -96,7 +96,7 @@ class RobotCore(object):
             self.launch_order = self.resolve_dependencies(deps_dict)
 
             if len(self.launch_order) == 0:
-                self.launch_order.append(set(last_name))
+                self.launch_order.append((last_name,))
 
             print "Launch order: {}".format(self.launch_order)
 
