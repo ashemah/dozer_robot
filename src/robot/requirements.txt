@@ -1,7 +1,11 @@
-argparse==1.2.1
-distribute==0.6.24
+greenlet==0.4.9
 jsonrpclib==0.1.6
+lxml==3.5.0
+mercurial==3.3.2
+pluginbase==0.3
 psutil==3.2.2
-pyOSC==0.3.5b-5294
+pyOSC==0.3.5b5294
 pyserial==2.7
-wsgiref==0.1.2
+pywatchman==0.1
+pyzmq==15.0.0
+redis==2.10.5
