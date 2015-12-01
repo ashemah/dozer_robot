@@ -131,14 +131,14 @@ class RobotCore(object):
                     connection_string = "tcp://{}:{}".format(host, port)
 
                 # Export internal service
-                elif 'is_exported' in launch_params:
+                elif 'is_published' in node_info:
 
-                    if 'hostname' in launch_params:
+                    if 'hostname' in node_info:
                         host = node_info['hostname']
                     else:
                         host = "*"
 
-                    if 'port' in launch_params:
+                    if 'port' in node_info:
                         port = node_info['port']
                     else:
                         port = 9111 # Make this a random port within the range allowed
