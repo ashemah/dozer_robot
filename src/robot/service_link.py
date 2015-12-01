@@ -1,5 +1,6 @@
 from uuid import uuid4
 import zmq
+from zmq.backend.cython.socket import ZMQError
 from comms_module_base import CommsModuleBase
 
 
@@ -15,6 +16,7 @@ class ServiceServer(CommsModuleBase):
         self.active_commands = {}
 
         self.recv_socket = self.context.socket(zmq.REP)
+        print "Service Host running on {}".format(connection_string)
         self.recv_socket.bind(connection_string)
 
     def get_socket(self):
@@ -77,6 +79,8 @@ class ServiceClient(CommsModuleBase):
 
     def __init__(self, zmq_context, connection_string, cmd_cb):
 
+        self.is_connected = False
+
         self.connection_string = connection_string
 
         self.context = zmq_context
@@ -97,10 +101,20 @@ class ServiceClient(CommsModuleBase):
 
         self.send_socket.connect(self.connection_string)
 
-        self.send_socket.send_json({'type': 'connect', 'sender': self.sender})
-        res = self.send_socket.recv_json()
+        try:
+            self.send_socket.send_json({'type': 'connect', 'sender': self.sender}, zmq.NOBLOCK)
+            res = self.send_socket.recv_json()
+
+            self.is_connected = True
+
+        except ZMQError, e:
+            self.is_connected = False
 
     def send(self, command, cmd_key=''):
-        print "Sending: {}".format(command)
-        self.send_socket.send_json({'type': 'cmd', 'sender': self.sender, 'cmd': command, 'cmd_key': cmd_key})
-        res = self.send_socket.recv_json()
+
+        if self.is_connected:
+            print "Sending: {}".format(command)
+            self.send_socket.send_json({'type': 'cmd', 'sender': self.sender, 'cmd': command, 'cmd_key': cmd_key})
+            res = self.send_socket.recv_json()
+        else:
+            print "Dropping send as is not connected"
