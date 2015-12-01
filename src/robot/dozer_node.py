@@ -52,5 +52,5 @@ class DozerNode(BaseNode):
 
 if __name__ == '__main__':
 
-    dozer_node = DozerNode('/dev/ttyACM0', 9600)
+    dozer_node = DozerNode('/dev/ttyACM0', 9600, {})
     dozer_node.run()
