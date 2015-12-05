@@ -20,7 +20,9 @@ class HardwareService(BaseService):
 
         cmd = message['cmd']
 
-        if cmd == 'fwd':
+        if cmd == 'talk':
+            self.serial_link.write('TALK\n')
+        elif cmd == 'fwd':
             self.serial_link.write('FWD\n')
         elif cmd == 'back':
             self.serial_link.write('BACK\n')
