@@ -32,7 +32,9 @@ class DozerNode(BaseNode):
 
         method = message['method']
 
-        if method == 'move_fwd':
+        if method == 'talk':
+            self.hardware.send({'cmd': 'talk'})
+        elif method == 'move_fwd':
             self.hardware.send({'cmd': 'fwd'})
         elif method == 'move_back':
             self.hardware.send({'cmd': 'back'})

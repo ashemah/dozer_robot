@@ -17,9 +17,13 @@ class RPCProxyNode(BaseNode):
         self.server.register_function(self.slider_changed)
         self.server.register_function(self.enable_camera)
         self.server.register_function(self.disable_camera)
+        self.server.register_function(self.talk)
 
     # def _dispatch(self, name, params):
     #     self.message_bus.publish('/control/cmd', {'name': name, params: params})
+
+    def talk(self):
+        self.message_bus.publish('/rpc/cmd', {'method': 'talk'}) # transform to talk
 
     def move_fwd(self):
         self.message_bus.publish('/rpc/cmd', {'method': 'move_fwd'})
